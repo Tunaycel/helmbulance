@@ -121,6 +121,7 @@ func (s ChartUpgrade) Run(ctx context.Context, env *Env) (res Result) {
 	// A renamed Secret whose value is carried over loses nothing either.
 	rest, moved := oracle.Moved(control, upgraded, withoutRefs(oracle.Diff(control, upgraded), regenerated))
 	changes, added := splitAdded(rest)
+	changes, rotated := splitExpected(changes, env.ExpectedRotation)
 	if len(changes) > 0 {
 		res.Findings = append(res.Findings, Finding{
 			ID:       "HB-CU-002",
@@ -160,6 +161,7 @@ func (s ChartUpgrade) Run(ctx context.Context, env *Env) (res Result) {
 	res.Summary = withNotes(res.Summary,
 		note("keys added by the new version, not a finding", describe(added, consumers)),
 		note("values moved to another key, not a finding", describe(moved, consumers)),
+		note("rotated as expected (--expected-rotation)", describe(rotated, consumers)),
 		secrets.notComparedNote())
 	return res
 }
