@@ -54,3 +54,22 @@ func TestSecretsInconclusive(t *testing.T) {
 		t.Errorf("summary for a read error = %q", got)
 	}
 }
+
+func TestSplitExpected(t *testing.T) {
+	changes := []oracle.Change{
+		{Ref: "hb-upgrade-webhook-tls/tls.crt", Kind: oracle.Changed},
+		{Ref: "hb-upgrade-webhook-tls/tls.key", Kind: oracle.Changed},
+		{Ref: "hb-upgrade-db/password", Kind: oracle.Changed},
+	}
+	rest, expected := splitExpected(changes, []string{"*-webhook-tls/*"})
+	if len(expected) != 2 || len(rest) != 1 || rest[0].Ref != "hb-upgrade-db/password" {
+		t.Errorf("rest = %v, expected = %v", rest, expected)
+	}
+	if rest, expected := splitExpected(changes, nil); len(rest) != 3 || len(expected) != 0 {
+		t.Errorf("no patterns: rest = %v, expected = %v", rest, expected)
+	}
+	// A glob does not cross the "/" between the Secret and the key.
+	if _, expected := splitExpected(changes, []string{"*"}); len(expected) != 0 {
+		t.Errorf(`"*" matched %v; it should match no "secret/key" reference`, expected)
+	}
+}
