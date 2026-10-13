@@ -24,7 +24,7 @@ type ZeroDowntime struct{}
 
 const (
 	zeroDowntimeNamespace = "hb-zero-downtime"
-	trafficImage          = "busybox:1.36.1"
+	trafficImage          = busyboxImage
 )
 
 // Variables, not constants, so tests can shorten them.
